@@ -1396,6 +1396,7 @@
 
       function enterApp(mode) {
         accessMode = mode;
+        populateCameraDevices();
         document.getElementById("scan-tip").textContent =
           mode === "guest"
             ? "Guest mode: enter a learner's LRN to record attendance. Management tools require Google sign-in."
@@ -1555,6 +1556,9 @@
           const devices = await Html5Qrcode.getCameras();
           if (devices && devices.length > 0) {
             devices.forEach((device) => {
+              if ([...select.options].some((option) => option.value === device.id)) {
+                return;
+              }
               const opt = document.createElement("option");
               opt.value = device.id;
               opt.innerText = `📷 Camera: ${device.label || "Camera Lens " + select.length}`;
