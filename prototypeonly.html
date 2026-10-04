@@ -603,6 +603,135 @@
       body.dark-mode .border-blue-600 {
         border-color: #a90059;
       }
+      #auth-screen {
+        display: grid;
+        min-height: calc(100vh - 76px);
+        place-items: center;
+        overflow: hidden;
+        padding: 2.5rem 1rem;
+        background:
+          radial-gradient(ellipse at 18% 18%, rgb(230 0 115 / 0.3), transparent 38%),
+          radial-gradient(ellipse at 82% 78%, rgb(80 95 255 / 0.35), transparent 42%),
+          linear-gradient(135deg, #21102f, #38204c 48%, #161d38);
+      }
+      #auth-screen.hidden {
+        display: none;
+      }
+      .auth-card-frame {
+        width: min(100%, 410px);
+        padding: 1px;
+        border-radius: 2rem;
+        background: linear-gradient(145deg, rgb(255 255 255 / 0.75), rgb(255 255 255 / 0.08) 42%, rgb(255 116 185 / 0.7));
+        box-shadow: 0 28px 90px rgb(0 0 0 / 0.42);
+      }
+      .auth-card {
+        position: relative;
+        overflow: hidden;
+        padding: 2.5rem 2rem 2rem;
+        border-radius: calc(2rem - 1px);
+        background: linear-gradient(155deg, rgb(65 38 83 / 0.94), rgb(40 41 91 / 0.96));
+        color: #fff;
+        text-align: center;
+        backdrop-filter: blur(18px);
+      }
+      .auth-card::before {
+        position: absolute;
+        top: -110px;
+        right: -80px;
+        width: 230px;
+        height: 230px;
+        border-radius: 50%;
+        background: rgb(255 116 185 / 0.16);
+        content: "";
+        filter: blur(8px);
+      }
+      .auth-brand-mark {
+        display: grid;
+        width: 68px;
+        height: 68px;
+        margin: 0 auto 1.1rem;
+        place-items: center;
+        border: 1px solid rgb(255 255 255 / 0.3);
+        border-radius: 50%;
+        background: linear-gradient(145deg, rgb(255 255 255 / 0.25), rgb(255 255 255 / 0.08));
+        box-shadow: 0 12px 35px rgb(0 0 0 / 0.18);
+        font-size: 2rem;
+      }
+      .auth-eyebrow {
+        margin-bottom: 0.5rem;
+        color: #ffb8d8;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+      .auth-description {
+        margin: 0 auto 1.6rem;
+        max-width: 290px;
+        color: rgb(255 255 255 / 0.74);
+        font-size: 0.9rem;
+        line-height: 1.55;
+      }
+      .auth-google-wrap {
+        display: flex;
+        min-height: 50px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.85rem;
+        background: #fff;
+        padding: 0.3rem;
+      }
+      .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin: 1.35rem 0;
+        color: rgb(255 255 255 / 0.55);
+        font-size: 0.72rem;
+      }
+      .auth-divider::before,
+      .auth-divider::after {
+        height: 1px;
+        flex: 1;
+        background: rgb(255 255 255 / 0.2);
+        content: "";
+      }
+      .auth-guest-button {
+        width: 100%;
+        border: 1px solid rgb(255 255 255 / 0.45);
+        border-radius: 0.85rem;
+        background: rgb(255 255 255 / 0.08);
+        padding: 0.85rem 1rem;
+        color: #fff;
+        font: inherit;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+      }
+      .auth-guest-button:hover {
+        transform: translateY(-1px);
+        border-color: #ff74b9;
+        background: rgb(255 116 185 / 0.18);
+      }
+      .auth-footnote {
+        margin-top: 1.25rem;
+        color: rgb(255 255 255 / 0.58);
+        font-size: 0.72rem;
+        line-height: 1.5;
+      }
+      #auth-error {
+        color: #fecaca;
+      }
+      @media (max-width: 480px) {
+        #auth-screen {
+          min-height: calc(100vh - 68px);
+          padding: 1.5rem 1rem;
+        }
+        .auth-card {
+          padding: 2rem 1.25rem 1.5rem;
+        }
+      }
       #reader video {
         object-fit: cover !important;
         border-radius: 0.75rem;
@@ -652,33 +781,36 @@
       </div>
     </header>
 
-    <section
-      id="auth-screen"
-      class="mx-auto mt-10 max-w-md rounded-2xl bg-white p-8 text-center shadow-sm"
-      aria-labelledby="auth-title"
-    >
-      <h2 id="auth-title" class="mb-2 text-2xl font-bold">Sign in to continue</h2>
-      <p class="mb-6 text-sm text-slate-600">
-        Use the Google account added as a test user for this app.
-      </p>
-      <div id="gsi-button" class="flex justify-center"></div>
-      <div class="mt-5 border-t border-slate-200 pt-5">
-        <p class="mb-3 text-sm text-slate-600">
-          Need to record attendance only? Continue without editing access.
-        </p>
-        <button
-          type="button"
-          onclick="continueAsGuest()"
-          class="rounded-lg bg-pink-600 px-5 py-3 font-semibold text-white hover:bg-pink-700"
-        >
-          Continue as guest
-        </button>
+    <section id="auth-screen" aria-labelledby="auth-title">
+      <div class="auth-card-frame">
+        <div class="auth-card">
+          <div class="auth-brand-mark" aria-hidden="true">📱</div>
+          <p class="auth-eyebrow">Learner Attendance System</p>
+          <h2 id="auth-title" class="mb-2 text-2xl font-bold">
+            Welcome back
+          </h2>
+          <p class="auth-description">
+            Sign in to manage learner records, attendance reports, and SMS
+            settings.
+          </p>
+          <div class="auth-google-wrap">
+            <div id="gsi-button" class="flex justify-center"></div>
+          </div>
+          <div class="auth-divider">OR</div>
+          <button
+            type="button"
+            onclick="continueAsGuest()"
+            class="auth-guest-button"
+          >
+            Continue as guest
+          </button>
+          <p class="auth-footnote">
+            Guest access can record attendance by LRN. Editing and management
+            tools require Google sign-in.
+          </p>
+          <p id="auth-error" class="mt-4 hidden text-sm font-semibold" role="alert"></p>
+        </div>
       </div>
-      <p
-        id="auth-error"
-        class="mt-4 hidden text-sm font-semibold text-red-600"
-        role="alert"
-      ></p>
     </section>
 
     <div id="app-layout" class="hidden">
