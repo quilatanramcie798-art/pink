@@ -317,6 +317,9 @@
         cursor: pointer;
         white-space: nowrap;
       }
+      #sidebar .tab-btn.hidden {
+        display: none;
+      }
       #sidebar .nav-label {
         display: none;
       }
@@ -341,6 +344,9 @@
         color: #fff;
         font: inherit;
         cursor: pointer;
+      }
+      #menu-toggle.hidden {
+        display: none;
       }
       #sidebar-backdrop {
         display: none;
@@ -656,6 +662,18 @@
         Use the Google account added as a test user for this app.
       </p>
       <div id="gsi-button" class="flex justify-center"></div>
+      <div class="mt-5 border-t border-slate-200 pt-5">
+        <p class="mb-3 text-sm text-slate-600">
+          Need to record attendance only? Continue without editing access.
+        </p>
+        <button
+          type="button"
+          onclick="continueAsGuest()"
+          class="rounded-lg bg-pink-600 px-5 py-3 font-semibold text-white hover:bg-pink-700"
+        >
+          Continue as guest
+        </button>
+      </div>
       <p
         id="auth-error"
         class="mt-4 hidden text-sm font-semibold text-red-600"
@@ -825,10 +843,11 @@
               </div>
             </div>
             <div
+              id="scan-tip"
               class="bg-slate-50 p-3 rounded-xl border text-xs text-slate-600"
             >
-              <strong>Tip:</strong> You can edit the notification templates
-              under the <em>Message &amp; SMS Setup</em> tab anytime.
+              Tip: You can edit notification templates under the Message &amp;
+              SMS Setup tab anytime.
             </div>
           </div>
         </div>
@@ -1337,6 +1356,7 @@
       let currentAttendanceMode = "Time IN";
       let html5QrcodeScanner = null;
       let scanAlertTimeout = null;
+      let accessMode = null;
 
       function initializeGoogleSignIn() {
         if (!window.google?.accounts?.id) {
@@ -1361,18 +1381,59 @@
           return;
         }
 
+        enterApp("admin");
+      }
+
+      function continueAsGuest() {
+        enterApp("guest");
+      }
+
+      function requireAdmin() {
+        if (accessMode === "admin") return true;
+        alert("Sign in with Google to use editing and management features.");
+        return false;
+      }
+
+      function enterApp(mode) {
+        accessMode = mode;
+        document.getElementById("scan-tip").textContent =
+          mode === "guest"
+            ? "Guest mode: enter a learner's LRN to record attendance. Management tools require Google sign-in."
+            : "Tip: You can edit notification templates under the Message & SMS Setup tab anytime.";
+        document
+          .querySelectorAll("#sidebar .tab-btn")
+          .forEach((button) => {
+            const scannerButton = button.id === "btn-scan-tab";
+            button.classList.toggle(
+              "hidden",
+              mode === "guest" && !scannerButton,
+            );
+          });
+        document.getElementById("menu-toggle").classList.toggle(
+          "hidden",
+          mode === "guest",
+        );
+        document.getElementById("signout-btn").innerText =
+          mode === "guest" ? "Exit guest mode" : "Sign out";
         document.getElementById("auth-screen").classList.add("hidden");
         document.getElementById("app-layout").classList.remove("hidden");
         document.getElementById("signout-btn").classList.remove("hidden");
         document.getElementById("auth-error").classList.add("hidden");
+        switchTab("scan-tab");
       }
 
       function signOut() {
         if (window.google?.accounts?.id) {
           google.accounts.id.disableAutoSelect();
         }
+        accessMode = null;
         stopCameraStream();
         closeMenu();
+        document.getElementById("menu-toggle").classList.remove("hidden");
+        document.getElementById("signout-btn").innerText = "Sign out";
+        document
+          .querySelectorAll("#sidebar .tab-btn")
+          .forEach((button) => button.classList.remove("hidden"));
         document.getElementById("app-layout").classList.add("hidden");
         document.getElementById("signout-btn").classList.add("hidden");
         document.getElementById("auth-screen").classList.remove("hidden");
@@ -1399,6 +1460,9 @@
       });
 
       function switchTab(tabId) {
+        if (accessMode === "guest" && tabId !== "scan-tab") {
+          return;
+        }
         closeMenu();
 
         document
@@ -1560,6 +1624,7 @@
       }
 
       function processHardwareInput() {
+        if (!accessMode) return;
         const inputEl = document.getElementById("hardware-input");
         const scannedLRN = inputEl.value.trim();
         if (scannedLRN) {
@@ -1569,6 +1634,7 @@
       }
 
       function processAttendanceScan(rawLRN) {
+        if (!accessMode) return;
         const scannedLRN = rawLRN.trim();
         if (!scannedLRN) return;
         playBeepSound();
@@ -1780,6 +1846,7 @@
       }
 
       function saveLearner(e) {
+        if (!requireAdmin()) return;
         e.preventDefault();
         const lrn = document.getElementById("form-lrn").value.trim();
         const name = document.getElementById("form-name").value.trim();
@@ -1811,6 +1878,7 @@
       }
 
       function editLearner(lrn) {
+        if (!requireAdmin()) return;
         const student = learners.find((l) => l.lrn === lrn);
         if (!student) return;
 
@@ -1829,6 +1897,7 @@
       }
 
       function deleteLearner(lrn) {
+        if (!requireAdmin()) return;
         if (confirm(`Are you sure you want to delete learner LRN: ${lrn}?`)) {
           learners = learners.filter((l) => l.lrn !== lrn);
           localStorage.setItem("sys_learners", JSON.stringify(learners));
@@ -1883,6 +1952,7 @@
       }
 
       function exportLearnersCSV() {
+        if (!requireAdmin()) return;
         let csv = "LRN,Full Name,Parent Name,Phone Number,Class / Section\n";
         learners.forEach((l) => {
           csv += `"${l.lrn}","${l.name}","${l.parentName}","${l.phone}","${l.className || "Unassigned"}"\n`;
@@ -1894,6 +1964,7 @@
       }
 
       function importLearnersCSV(e) {
+        if (!requireAdmin()) return;
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
@@ -1930,6 +2001,7 @@
       }
 
       async function triggerTextBrigade() {
+        if (!requireAdmin()) return;
         const msg = document.getElementById("brigade-message").value.trim();
         if (!msg) {
           alert("Please type a broadcast message first!");
@@ -2111,6 +2183,7 @@
       }
 
       function markLearnerAbsent() {
+        if (!requireAdmin()) return;
         const learnerId = document.getElementById("absence-learner").value;
         const reportDate = document.getElementById("filter-log-date").value;
         if (!learnerId) {
@@ -2173,12 +2246,14 @@
       }
 
       function deleteLog(id) {
+        if (!requireAdmin()) return;
         logs = logs.filter((l) => l.id !== id);
         localStorage.setItem("sys_attendance_logs", JSON.stringify(logs));
         renderLogsTable();
       }
 
       function clearAllLogs() {
+        if (!requireAdmin()) return;
         if (
           confirm(
             "Are you sure you want to permanently clear all attendance logs history?",
@@ -2191,6 +2266,7 @@
       }
 
       function exportLogsCSV() {
+        if (!requireAdmin()) return;
         const reportDate = document.getElementById("filter-log-date").value;
         if (!reportDate) {
           alert("Select a report date before exporting.");
@@ -2302,6 +2378,7 @@
       }
 
       function saveSettings() {
+        if (!requireAdmin()) return;
         settings.timeInTemplate = document
           .getElementById("template-timein")
           .value.trim();
