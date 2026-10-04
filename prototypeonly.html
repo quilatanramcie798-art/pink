@@ -1,0 +1,2252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learner Attendance & SMS Notification System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+      .active-tab {
+        color: #2563eb;
+        font-weight: bold;
+      }
+      body.dark-mode {
+        background-color: #0b1120;
+        color: #e2e8f0;
+      }
+      .dark-mode header {
+        background-color: #111827;
+      }
+      .dark-mode #sidebar,
+      .dark-mode #menu-toggle,
+      .dark-mode .bg-white,
+      .dark-mode .bg-slate-50,
+      .dark-mode .bg-slate-100,
+      .dark-mode .bg-gray-100,
+      .dark-mode .bg-gray-200 {
+        background-color: #1e293b;
+      }
+      .dark-mode .bg-amber-50,
+      .dark-mode .bg-amber-100,
+      .dark-mode .bg-amber-200 {
+        background-color: #422006;
+      }
+      .dark-mode .bg-green-50,
+      .dark-mode .bg-green-100 {
+        background-color: #052e16;
+      }
+      .dark-mode .bg-red-50,
+      .dark-mode .bg-red-100 {
+        background-color: #450a0a;
+      }
+      .dark-mode .text-slate-800,
+      .dark-mode .text-slate-700,
+      .dark-mode .text-gray-800,
+      .dark-mode .text-gray-700,
+      .dark-mode .text-gray-600,
+      .dark-mode .text-gray-500,
+      .dark-mode .text-slate-600,
+      .dark-mode .text-gray-400,
+      .dark-mode .text-amber-700,
+      .dark-mode .text-amber-800,
+      .dark-mode .text-amber-900,
+      .dark-mode .text-green-800,
+      .dark-mode .text-red-600,
+      .dark-mode .text-red-700 {
+        color: #e2e8f0;
+      }
+      .dark-mode .text-red-600 {
+        color: #fca5a5;
+      }
+      .dark-mode .text-red-700 {
+        color: #fecaca;
+      }
+      .dark-mode .text-amber-700,
+      .dark-mode .text-amber-800,
+      .dark-mode .text-amber-900 {
+        color: #fde68a;
+      }
+      .dark-mode .text-green-800 {
+        color: #86efac;
+      }
+      .dark-mode .text-blue-700 {
+        color: #93c5fd;
+      }
+      .dark-mode .active-tab {
+        border-color: #60a5fa;
+        color: #93c5fd;
+      }
+      .dark-mode input,
+      .dark-mode textarea,
+      .dark-mode select {
+        background-color: #0f172a;
+        color: #e2e8f0;
+        border-color: #475569;
+      }
+      .dark-mode input::placeholder,
+      .dark-mode textarea::placeholder {
+        color: #94a3b8;
+      }
+      .dark-mode .border,
+      .dark-mode .border-b,
+      .dark-mode .border-slate-200,
+      .dark-mode .border-amber-200,
+      .dark-mode .border-green-200 {
+        border-color: #475569;
+      }
+      .dark-mode .hover\:bg-slate-50:hover {
+        background-color: #334155;
+      }
+      .dark-mode .hover\:bg-slate-100:hover {
+        background-color: #334155;
+      }
+      .dark-mode .hover\:bg-amber-200:hover {
+        background-color: #713f12;
+      }
+      .dark-mode .hover\:bg-red-200:hover {
+        background-color: #7f1d1d;
+      }
+      body:not(.dark-mode) {
+        background-color: #f3f6f8;
+        color: #334155;
+      }
+      body:not(.dark-mode) header {
+        background-color: #49677d;
+      }
+      body:not(.dark-mode) .bg-blue-800 {
+        background-color: #38566b;
+      }
+      body:not(.dark-mode) .bg-blue-600 {
+        background-color: #557b91;
+      }
+      body:not(.dark-mode) .hover\:bg-blue-700:hover {
+        background-color: #45677d;
+      }
+      body:not(.dark-mode) .hover\:bg-blue-900:hover {
+        background-color: #304b5e;
+      }
+      body:not(.dark-mode) #sidebar .tab-btn.active-tab {
+        border-color: #668a9f;
+        color: #42677e;
+      }
+      body:not(.dark-mode) .bg-green-600,
+      body:not(.dark-mode) .bg-green-500 {
+        background-color: #527e6e;
+      }
+      body:not(.dark-mode) .hover\:bg-green-700:hover {
+        background-color: #426b5c;
+      }
+      body:not(.dark-mode) .bg-red-600 {
+        background-color: #a65f62;
+      }
+      body:not(.dark-mode) .hover\:bg-red-700:hover {
+        background-color: #8e5053;
+      }
+      body:not(.dark-mode) .bg-amber-500,
+      body:not(.dark-mode) .bg-amber-600 {
+        background-color: #9a7543;
+      }
+      body:not(.dark-mode) #btn-mode-out.bg-white {
+        border-color: #9a7543;
+        color: #806239;
+      }
+      body:not(.dark-mode) .hover\:bg-amber-50:hover {
+        background-color: #f4eee3;
+      }
+      body:not(.dark-mode) .bg-amber-50 {
+        background-color: #f5f0e7;
+      }
+      body:not(.dark-mode) .bg-green-50 {
+        background-color: #edf4f0;
+      }
+      body:not(.dark-mode) .bg-red-50 {
+        background-color: #f7eeee;
+      }
+      body:not(.dark-mode) #scan-alert.bg-green-500 {
+        background-color: #527e6e;
+      }
+      body:not(.dark-mode) #scan-alert.bg-amber-100 {
+        background-color: #f5f0e7;
+        color: #624b2a;
+      }
+      body:not(.dark-mode) #scan-alert.bg-red-600 {
+        background-color: #a65f62;
+      }
+      body.dark-mode {
+        background-color: #151c24;
+        color: #d6dee5;
+      }
+      .dark-mode header {
+        background-color: #263b4a;
+      }
+      .dark-mode .bg-blue-800 {
+        background-color: #344e60;
+      }
+      .dark-mode .bg-blue-600 {
+        background-color: #496c80;
+      }
+      .dark-mode .hover\:bg-blue-700:hover {
+        background-color: #557d91;
+      }
+      .dark-mode .hover\:bg-blue-900:hover {
+        background-color: #263d4e;
+      }
+      .dark-mode #sidebar .tab-btn.active-tab {
+        border-color: #83aabd;
+        color: #b3cfdd;
+      }
+      .dark-mode .bg-green-600,
+      .dark-mode .bg-green-500 {
+        background-color: #426c5d;
+      }
+      .dark-mode .hover\:bg-green-700:hover {
+        background-color: #527e6e;
+      }
+      .dark-mode .bg-red-600 {
+        background-color: #884f52;
+      }
+      .dark-mode .hover\:bg-red-700:hover {
+        background-color: #a65f62;
+      }
+      .dark-mode .bg-amber-500,
+      .dark-mode .bg-amber-600 {
+        background-color: #80663f;
+      }
+      .dark-mode #btn-mode-out.bg-white {
+        background-color: #26323b;
+        color: #e0c18d;
+      }
+      .dark-mode input.bg-slate-50,
+      .dark-mode select.bg-slate-50,
+      .dark-mode textarea.bg-slate-50 {
+        background-color: #18232d;
+        color: #d6dee5;
+        border-color: #435260;
+      }
+      .dark-mode .bg-amber-50,
+      .dark-mode .bg-amber-100,
+      .dark-mode .bg-amber-200 {
+        background-color: #392f23;
+      }
+      .dark-mode .bg-green-50,
+      .dark-mode .bg-green-100 {
+        background-color: #22372f;
+      }
+      .dark-mode .bg-red-50,
+      .dark-mode .bg-red-100 {
+        background-color: #3d292c;
+      }
+      .dark-mode #scan-alert.bg-amber-100 {
+        background-color: #51422d;
+        color: #f1dfbd;
+      }
+      button,
+      input,
+      select,
+      textarea {
+        transition:
+          background-color 160ms ease,
+          border-color 160ms ease,
+          color 160ms ease,
+          box-shadow 160ms ease;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      textarea:focus-visible {
+        outline: 3px solid #668a9f;
+        outline-offset: 2px;
+      }
+      #app-layout {
+        display: flex;
+        min-height: calc(100vh - 76px);
+      }
+      #sidebar {
+        position: sticky;
+        top: 76px;
+        z-index: 60;
+        flex: 0 0 76px;
+        align-self: flex-start;
+        min-height: calc(100vh - 76px);
+      }
+      #sidebar .site-nav-menu {
+        position: fixed;
+        top: 76px;
+        bottom: 0;
+        left: 0;
+        z-index: 60;
+        box-sizing: border-box;
+        width: 76px;
+        overflow: hidden;
+        padding: 0.75rem 0.5rem;
+        background-color: #fff;
+        border-right: 1px solid #e2e8f0;
+        box-shadow: 0 4px 12px rgb(15 23 42 / 0.08);
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.25rem;
+        transition: width 180ms ease-out;
+      }
+      #sidebar:hover .site-nav-menu,
+      #sidebar:focus-within .site-nav-menu {
+        width: 250px;
+      }
+      #sidebar .tab-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.75rem;
+        border: 0;
+        border-radius: 0.5rem;
+        background: transparent;
+        color: #334155;
+        text-align: left;
+        font: inherit;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      #sidebar .nav-label {
+        display: none;
+      }
+      #sidebar:hover .nav-label,
+      #sidebar:focus-within .nav-label {
+        display: inline;
+      }
+      #sidebar .tab-btn:hover {
+        background-color: #f1f5f9;
+      }
+      #sidebar .tab-btn.active-tab {
+        border-left: 3px solid #2563eb;
+        color: #2563eb;
+        font-weight: bold;
+      }
+      #menu-toggle {
+        display: none;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid rgb(255 255 255 / 0.35);
+        border-radius: 0.5rem;
+        background-color: #1e40af;
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+      #sidebar-backdrop {
+        display: none;
+      }
+      #main-content {
+        flex: 1;
+        min-width: 0;
+      }
+      .dark-mode #sidebar .site-nav-menu {
+        background-color: #111827;
+        border-color: #334155;
+      }
+      .dark-mode #sidebar .tab-btn {
+        color: #e2e8f0;
+      }
+      .dark-mode #sidebar .tab-btn:hover {
+        background-color: #334155;
+      }
+      .dark-mode #sidebar .tab-btn.active-tab {
+        color: #93c5fd;
+        border-color: #60a5fa;
+      }
+      @media (max-width: 767px) {
+        header > .max-w-6xl {
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+        header > .max-w-6xl > h1 {
+          min-width: 0;
+          font-size: 1.125rem;
+          line-height: 1.4;
+        }
+        header > .max-w-6xl > div {
+          width: 100%;
+          justify-content: space-between;
+        }
+        #hardware-scanner-box > div {
+          min-width: 0;
+        }
+        #hardware-input {
+          min-width: 0;
+          width: 100%;
+          font-size: 1rem;
+        }
+        #hardware-scanner-box > div > button {
+          flex: 0 0 auto;
+          padding-right: 0.75rem;
+          padding-left: 0.75rem;
+        }
+        #menu-toggle {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        #app-layout {
+          display: block;
+        }
+        #sidebar {
+          position: fixed;
+          z-index: 80;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          width: min(18rem, 85vw);
+          min-height: 0;
+          padding: 1rem;
+          background-color: #fff;
+          border-right: 1px solid #e2e8f0;
+          overflow-y: auto;
+          box-shadow: 0 10px 25px rgb(0 0 0 / 0.2);
+          transform: translateX(-105%);
+          transition: transform 180ms ease-out;
+        }
+        #sidebar .site-nav-menu {
+          position: static;
+          top: auto;
+          bottom: auto;
+          left: auto;
+          width: 100%;
+          min-height: 100%;
+          overflow: visible;
+          padding: 0;
+          border: 0;
+          box-shadow: none;
+          transition: none;
+        }
+        #sidebar .nav-label {
+          display: inline;
+        }
+        #sidebar .tab-btn {
+          text-align: left;
+        }
+        #sidebar.is-open {
+          transform: translateX(0);
+        }
+        #sidebar-backdrop.is-visible {
+          display: block;
+          position: fixed;
+          z-index: 70;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          border: 0;
+          background-color: rgb(15 23 42 / 0.55);
+        }
+        #sidebar .tab-btn.active-tab {
+          border-left: 3px solid #2563eb;
+        }
+        .dark-mode #sidebar {
+          background-color: #111827;
+          border-color: #334155;
+        }
+      }
+      body:not(.dark-mode) #sidebar .tab-btn.active-tab {
+        border-color: #668a9f;
+        color: #42677e;
+      }
+      body.dark-mode #sidebar .tab-btn.active-tab {
+        border-color: #83aabd;
+        color: #b3cfdd;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      textarea:focus-visible {
+        outline-color: #ff1493;
+      }
+      body:not(.dark-mode) header,
+      body:not(.dark-mode) #menu-toggle {
+        background-color: #d1006f;
+      }
+      body:not(.dark-mode) .bg-blue-800 {
+        background-color: #a90059;
+      }
+      body:not(.dark-mode) .bg-blue-600,
+      body:not(.dark-mode) .bg-green-600,
+      body:not(.dark-mode) .bg-green-500,
+      body:not(.dark-mode) .bg-red-600,
+      body:not(.dark-mode) .bg-amber-600,
+      body:not(.dark-mode) .bg-amber-500 {
+        background-color: #e60073;
+        color: #fff;
+      }
+      body:not(.dark-mode) .hover\:bg-blue-700:hover,
+      body:not(.dark-mode) .hover\:bg-green-700:hover,
+      body:not(.dark-mode) .hover\:bg-red-700:hover {
+        background-color: #c00060;
+        color: #fff;
+      }
+      body:not(.dark-mode) .hover\:bg-blue-900:hover {
+        background-color: #850047;
+      }
+      body:not(.dark-mode) .bg-amber-50,
+      body:not(.dark-mode) .bg-green-50,
+      body:not(.dark-mode) .bg-red-50,
+      body:not(.dark-mode) .hover\:bg-amber-50:hover {
+        background-color: #fff;
+      }
+      body:not(.dark-mode) #scan-alert.bg-green-500,
+      body:not(.dark-mode) #scan-alert.bg-red-600,
+      body:not(.dark-mode) #scan-alert.bg-amber-100 {
+        background-color: #d1006f;
+        color: #fff;
+      }
+      body:not(.dark-mode) #sidebar .tab-btn.active-tab,
+      body:not(.dark-mode) #btn-mode-out.bg-white {
+        border-color: #ff1493;
+        color: #c00060;
+      }
+      .dark-mode header,
+      .dark-mode #menu-toggle {
+        background-color: #8f004c;
+      }
+      .dark-mode .bg-blue-800 {
+        background-color: #71003d;
+      }
+      .dark-mode .bg-blue-600,
+      .dark-mode .bg-green-600,
+      .dark-mode .bg-green-500,
+      .dark-mode .bg-red-600,
+      .dark-mode .bg-amber-600,
+      .dark-mode .bg-amber-500 {
+        background-color: #a90059;
+        color: #fff;
+      }
+      .dark-mode .hover\:bg-blue-700:hover,
+      .dark-mode .hover\:bg-green-700:hover,
+      .dark-mode .hover\:bg-red-700:hover {
+        background-color: #d1006f;
+        color: #fff;
+      }
+      .dark-mode .hover\:bg-blue-900:hover {
+        background-color: #59002f;
+      }
+      .dark-mode .bg-amber-50,
+      .dark-mode .bg-amber-100,
+      .dark-mode .bg-amber-200,
+      .dark-mode .bg-green-50,
+      .dark-mode .bg-green-100,
+      .dark-mode .bg-red-50,
+      .dark-mode .bg-red-100,
+      .dark-mode .hover\:bg-amber-200:hover,
+      .dark-mode .hover\:bg-red-200:hover {
+        background-color: #3b1029;
+      }
+      .dark-mode #scan-alert.bg-green-500,
+      .dark-mode #scan-alert.bg-red-600,
+      .dark-mode #scan-alert.bg-amber-100 {
+        background-color: #a90059;
+        color: #fff;
+      }
+      .dark-mode #btn-mode-out.bg-white {
+        background-color: #30232b;
+        border-color: #d1006f;
+        color: #ff1493;
+      }
+      body:not(.dark-mode) #sidebar .tab-btn.active-tab {
+        border-color: #ff1493;
+        color: #c00060;
+      }
+      body.dark-mode #sidebar .tab-btn.active-tab {
+        border-color: #ff1493;
+        color: #ff1493;
+      }
+      body:not(.dark-mode) .text-blue-700,
+      body:not(.dark-mode) .text-green-800,
+      body:not(.dark-mode) .text-red-600,
+      body:not(.dark-mode) .text-red-700,
+      body:not(.dark-mode) .text-amber-700,
+      body:not(.dark-mode) .text-amber-800,
+      body:not(.dark-mode) .text-amber-900 {
+        color: #a90059;
+      }
+      body.dark-mode .text-blue-700,
+      body.dark-mode .text-green-800,
+      body.dark-mode .text-red-600,
+      body.dark-mode .text-red-700,
+      body.dark-mode .text-amber-700,
+      body.dark-mode .text-amber-800,
+      body.dark-mode .text-amber-900 {
+        color: #ff74b9;
+      }
+      body:not(.dark-mode) .border-amber-200,
+      body:not(.dark-mode) .border-green-200,
+      body:not(.dark-mode) .border-green-600,
+      body:not(.dark-mode) .border-red-600,
+      body:not(.dark-mode) .border-blue-600 {
+        border-color: #e60073;
+      }
+      body.dark-mode .border-amber-200,
+      body.dark-mode .border-green-200,
+      body.dark-mode .border-green-600,
+      body.dark-mode .border-red-600,
+      body.dark-mode .border-blue-600 {
+        border-color: #a90059;
+      }
+      #reader video {
+        object-fit: cover !important;
+        border-radius: 0.75rem;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+    <header class="bg-blue-700 text-white shadow-md p-4 sticky top-0 z-50">
+      <div class="max-w-6xl mx-auto flex justify-between items-center">
+        <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+          <button
+            id="menu-toggle"
+            type="button"
+            onclick="toggleMenu()"
+            aria-controls="sidebar"
+            aria-expanded="false"
+            aria-label="Open section menu"
+          >
+            ☰
+          </button>
+          <span>📱</span> Learner Attendance System
+        </h1>
+        <div class="flex items-center gap-2">
+          <span
+            id="system-time"
+            class="whitespace-nowrap text-xs md:text-sm bg-blue-800 px-3 py-1 rounded-full font-mono"
+            >--:--:--</span
+          >
+          <button
+            id="theme-toggle"
+            type="button"
+            onclick="toggleTheme()"
+            aria-pressed="false"
+            class="shrink-0 whitespace-nowrap text-xs md:text-sm bg-blue-800 hover:bg-blue-900 px-3 py-2 rounded-lg font-semibold"
+          >
+            🌙 Dark
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div id="app-layout">
+      <nav id="sidebar" aria-label="Main navigation">
+        <div class="site-nav-menu">
+          <button
+            onclick="switchTab('scan-tab')"
+            id="btn-scan-tab"
+            class="tab-btn active-tab"
+            aria-label="Attendance Scanner"
+            title="Attendance Scanner"
+          >
+            <span aria-hidden="true">📷</span>
+            <span class="nav-label">Attendance Scanner</span>
+          </button>
+          <button
+            onclick="switchTab('learners-tab')"
+            id="btn-learners-tab"
+            class="tab-btn"
+            aria-label="Learner Data Sheet"
+            title="Learner Data Sheet"
+          >
+            <span aria-hidden="true">📋</span>
+            <span class="nav-label">Learner Data Sheet</span>
+          </button>
+          <button
+            onclick="switchTab('brigade-tab')"
+            id="btn-brigade-tab"
+            class="tab-btn"
+            aria-label="Text Brigade"
+            title="Text Brigade"
+          >
+            <span aria-hidden="true">🚨</span>
+            <span class="nav-label">Text Brigade</span>
+          </button>
+          <button
+            onclick="switchTab('logs-tab')"
+            id="btn-logs-tab"
+            class="tab-btn"
+            aria-label="Logs and Reports"
+            title="Logs and Reports"
+          >
+            <span aria-hidden="true">📊</span>
+            <span class="nav-label">Logs &amp; Reports</span>
+          </button>
+          <button
+            onclick="switchTab('settings-tab')"
+            id="btn-settings-tab"
+            class="tab-btn"
+            aria-label="Message and SMS Setup"
+            title="Message and SMS Setup"
+          >
+            <span aria-hidden="true">⚙️</span>
+            <span class="nav-label">Message &amp; SMS Setup</span>
+          </button>
+        </div>
+      </nav>
+      <button
+        id="sidebar-backdrop"
+        type="button"
+        onclick="closeMenu()"
+        aria-label="Close section menu"
+      ></button>
+      <main id="main-content" class="max-w-6xl mx-auto p-4 md:p-6">
+      <section id="scan-tab" class="tab-content block space-y-6">
+        <div
+          id="scan-alert"
+          class="hidden p-4 rounded-xl text-center text-lg font-bold shadow-lg transition-all"
+        ></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div
+            class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm space-y-4"
+          >
+            <div class="flex gap-4">
+              <button
+                id="btn-mode-in"
+                onclick="setAttendanceMode('Time IN')"
+                class="flex-1 py-3 text-lg font-bold rounded-xl border-2 border-green-600 bg-green-600 text-white shadow-md"
+              >
+                🟢 TIME IN
+              </button>
+              <button
+                id="btn-mode-out"
+                onclick="setAttendanceMode('Time OUT')"
+                class="flex-1 py-3 text-lg font-bold rounded-xl border-2 border-amber-500 bg-white text-amber-600 hover:bg-amber-50"
+              >
+                🔴 TIME OUT
+              </button>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-700"
+                >Select Input Source:</label
+              >
+              <select
+                id="camera-select"
+                onchange="handleSourceChange()"
+                class="w-full p-3 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="bluetooth">
+                  ⌨️ Bluetooth / Hardware Scanner Mode (No Camera Permission
+                  Required)
+                </option>
+              </select>
+            </div>
+
+            <div
+              id="camera-container"
+              class="relative bg-slate-900 rounded-xl overflow-hidden min-h-[300px] flex flex-col items-center justify-center text-white"
+            >
+              <div id="reader" class="w-full h-full"></div>
+              <p
+                id="camera-fallback-text"
+                class="text-slate-400 text-sm p-4 text-center"
+              >
+                Camera stream will appear here when an active lens is selected
+                above.
+              </p>
+            </div>
+
+            <div id="hardware-scanner-box" class="space-y-2">
+              <label class="block text-sm font-semibold text-blue-700"
+                >Bluetooth/Hardware Scanner Input:</label
+              >
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  id="hardware-input"
+                  placeholder="Click here & pull scanner trigger or type LRN..."
+                  class="flex-1 p-3 border-2 border-blue-400 rounded-xl focus:ring-2 focus:ring-blue-600 font-mono text-lg"
+                  onkeypress="handleHardwareKeyPress(event)"
+                />
+                <button
+                  onclick="processHardwareInput()"
+                  class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700"
+                >
+                  Submit
+                </button>
+              </div>
+              <p class="text-xs text-gray-500">
+                Point your Bluetooth Scanner Gun here or type student LRN and
+                press Enter.
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="bg-white p-6 rounded-2xl shadow-sm space-y-4 flex flex-col justify-between"
+          >
+            <div>
+              <h2 class="text-lg font-bold text-gray-800 border-b pb-2 mb-3">
+                Recent Scans Today
+              </h2>
+              <div
+                id="recent-scans-list"
+                class="space-y-3 max-h-[380px] overflow-y-auto text-sm"
+              >
+                <p class="text-gray-400 text-center py-6">
+                  No scans recorded today yet.
+                </p>
+              </div>
+            </div>
+            <div
+              class="bg-slate-50 p-3 rounded-xl border text-xs text-slate-600"
+            >
+              <strong>Tip:</strong> You can edit the notification templates
+              under the <em>Message &amp; SMS Setup</em> tab anytime.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="learners-tab" class="tab-content hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-white p-6 rounded-2xl shadow-sm space-y-4">
+            <h2
+              id="form-title"
+              class="text-lg font-bold text-gray-800 border-b pb-2"
+            >
+              ➕ Add New Learner
+            </h2>
+
+            <form
+              id="learner-form"
+              onsubmit="saveLearner(event)"
+              class="space-y-3"
+            >
+              <input type="hidden" id="edit-original-lrn" />
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1"
+                  >LRN / Student ID *</label
+                >
+                <input
+                  type="text"
+                  id="form-lrn"
+                  required
+                  placeholder="e.g. 10928374001"
+                  class="w-full p-2.5 border rounded-lg font-mono focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1"
+                  >Learner Full Name *</label
+                >
+                <input
+                  type="text"
+                  id="form-name"
+                  required
+                  placeholder="e.g. Juan De La Cruz"
+                  class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1"
+                  >Parent / Guardian Name *</label
+                >
+                <input
+                  type="text"
+                  id="form-parent"
+                  required
+                  placeholder="e.g. Maria De La Cruz"
+                  class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1"
+                  >Registered Parent Phone Number *</label
+                >
+                <input
+                  type="tel"
+                  id="form-phone"
+                  required
+                  placeholder="e.g. 09171234567"
+                  class="w-full p-2.5 border rounded-lg font-mono focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1"
+                  >Class / Section</label
+                >
+                <input
+                  type="text"
+                  id="form-class"
+                  placeholder="e.g. Grade 7 - Section A"
+                  class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div class="flex gap-2 pt-2">
+                <button
+                  type="submit"
+                  id="btn-save-learner"
+                  class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700"
+                >
+                  Save Learner
+                </button>
+                <button
+                  type="button"
+                  onclick="resetLearnerForm()"
+                  class="bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg hover:bg-gray-300"
+                >
+                  Clear
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div
+            class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm space-y-4"
+          >
+            <div
+              class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b pb-3"
+            >
+              <h2 class="text-lg font-bold text-gray-800">
+                📋 Registered Learners Directory
+              </h2>
+              <div class="flex gap-2">
+                <button
+                  onclick="exportLearnersCSV()"
+                  class="bg-green-600 text-white text-xs px-3 py-2 rounded-lg font-bold hover:bg-green-700"
+                >
+                  Export CSV
+                </button>
+                <label
+                  class="bg-slate-700 text-white text-xs px-3 py-2 rounded-lg font-bold hover:bg-slate-800 cursor-pointer"
+                >
+                  Import CSV
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onchange="importLearnersCSV(event)"
+                    class="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <input
+              type="text"
+              id="search-learner"
+              onkeyup="renderLearnersTable()"
+              placeholder="🔍 Search by Name, LRN, or Parent..."
+              class="w-full p-2.5 border rounded-lg text-sm mb-2"
+            />
+
+            <div class="overflow-x-auto max-h-[420px]">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead class="bg-slate-100 text-slate-700 sticky top-0">
+                  <tr>
+                    <th class="p-2.5 border-b">LRN</th>
+                    <th class="p-2.5 border-b">Learner Name</th>
+                    <th class="p-2.5 border-b">Parent Name</th>
+                    <th class="p-2.5 border-b">Phone Number</th>
+                    <th class="p-2.5 border-b">Class / Section</th>
+                    <th class="p-2.5 border-b text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="learners-table-body" class="divide-y"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="brigade-tab" class="tab-content hidden space-y-6">
+        <div
+          class="bg-white p-6 rounded-2xl shadow-sm max-w-3xl mx-auto space-y-6"
+        >
+          <div class="border-b pb-3">
+            <h2 class="text-xl font-bold text-red-600 flex items-center gap-2">
+              <span>📢</span> Text Brigade (Emergency Broadcast)
+            </h2>
+            <p class="text-sm text-gray-500">
+              Send an urgent broadcast SMS to all registered parent contact
+              numbers in one click.
+            </p>
+          </div>
+
+          <div
+            class="bg-amber-50 border border-amber-200 p-4 rounded-xl text-sm text-amber-800 flex items-center justify-between"
+          >
+            <div>
+              <strong>Total Audience:</strong>
+              <span
+                id="brigade-recipient-count"
+                class="font-bold text-lg text-amber-900"
+                >0</span
+              >
+              registered parent numbers.
+            </div>
+            <span
+              class="text-xs bg-amber-200 text-amber-900 px-2.5 py-1 rounded-full font-semibold"
+              >Ready</span
+            >
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700"
+              >Broadcast Message Content:</label
+            >
+            <textarea
+              id="brigade-message"
+              rows="5"
+              class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-red-500 text-base"
+              placeholder="Type emergency alert here (e.g., EMERGENCY ALERT: School classes are suspended today due to heavy rains. Please keep your children safe at home.)"
+            ></textarea>
+          </div>
+
+          <div id="brigade-progress-container" class="hidden space-y-2">
+            <div
+              class="flex justify-between text-xs font-semibold text-gray-600"
+            >
+              <span>Sending Progress...</span>
+              <span id="brigade-progress-text">0 / 0</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div
+                id="brigade-progress-bar"
+                class="bg-red-600 h-3 w-0 transition-all"
+              ></div>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button
+              onclick="triggerTextBrigade()"
+              class="w-full bg-red-600 text-white py-4 rounded-xl text-lg font-bold hover:bg-red-700 shadow-lg flex items-center justify-center gap-2"
+            >
+              <span>🚀</span> DISPATCH EMERGENCY TEXT BRIGADE
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="logs-tab" class="tab-content hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl shadow-sm space-y-4">
+          <div
+            class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b pb-3"
+          >
+            <h2 class="text-lg font-bold text-gray-800">
+              📊 Attendance Activity History
+            </h2>
+            <div class="flex gap-2">
+              <button
+                onclick="exportLogsCSV()"
+                class="bg-green-600 text-white text-xs px-3 py-2 rounded-lg font-bold hover:bg-green-700"
+              >
+                Export Selected Report to CSV
+              </button>
+              <button
+                onclick="clearAllLogs()"
+                class="bg-red-100 text-red-700 text-xs px-3 py-2 rounded-lg font-bold hover:bg-red-200"
+              >
+                Clear Logs History
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <input
+              type="text"
+              id="search-logs"
+              oninput="renderLogsTable()"
+              placeholder="🔍 Search learner, LRN, or mode..."
+              class="w-full p-2.5 border rounded-lg text-sm"
+            />
+            <input
+              type="date"
+              id="filter-log-date"
+              aria-label="Filter attendance by date"
+              onchange="renderLogsTable()"
+              class="w-full p-2.5 border rounded-lg text-sm"
+            />
+            <select
+              id="filter-log-class"
+              aria-label="Filter attendance by class"
+              onchange="renderLogsTable()"
+              class="w-full p-2.5 border rounded-lg text-sm"
+            >
+              <option value="">All classes</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-1 gap-3 rounded-xl bg-slate-50 p-4 sm:grid-cols-4">
+            <div>
+              <label for="late-cutoff" class="mb-1 block text-xs font-semibold text-gray-600">
+                Late after
+              </label>
+              <input
+                type="time"
+                id="late-cutoff"
+                value="08:00"
+                onchange="renderLogsTable()"
+                class="w-full rounded-lg border p-2 text-sm"
+              />
+            </div>
+            <div class="sm:col-span-3">
+              <p class="mb-1 text-xs font-semibold text-gray-600">Mark absent manually</p>
+              <div class="flex flex-col gap-2 sm:flex-row">
+                <select
+                  id="absence-learner"
+                  aria-label="Learner to mark absent"
+                  class="min-w-0 flex-1 rounded-lg border p-2 text-sm"
+                >
+                  <option value="">Select a learner</option>
+                </select>
+                <button
+                  type="button"
+                  onclick="markLearnerAbsent()"
+                  class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                >
+                  Mark absent
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div class="rounded-xl border bg-white p-4">
+              <p class="text-xs font-semibold text-gray-500">Present</p>
+              <p id="report-present" class="mt-1 text-2xl font-bold text-gray-800">0</p>
+            </div>
+            <div class="rounded-xl border bg-white p-4">
+              <p class="text-xs font-semibold text-gray-500">Absent / no check-in</p>
+              <p id="report-absent" class="mt-1 text-2xl font-bold text-gray-800">0</p>
+            </div>
+            <div class="rounded-xl border bg-white p-4">
+              <p class="text-xs font-semibold text-gray-500">Late</p>
+              <p id="report-late" class="mt-1 text-2xl font-bold text-gray-800">0</p>
+            </div>
+            <div class="rounded-xl border bg-white p-4">
+              <p class="text-xs font-semibold text-gray-500">Checked out</p>
+              <p id="report-checked-out" class="mt-1 text-2xl font-bold text-gray-800">0</p>
+            </div>
+          </div>
+          <p id="report-scope" class="text-xs text-gray-500"></p>
+
+          <div class="overflow-x-auto max-h-[500px]">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-100 text-slate-700 sticky top-0">
+                <tr>
+                  <th class="p-2.5 border-b">Date &amp; Time</th>
+                  <th class="p-2.5 border-b">LRN</th>
+                  <th class="p-2.5 border-b">Learner Name</th>
+                  <th class="p-2.5 border-b">Class / Section</th>
+                  <th class="p-2.5 border-b">Mode</th>
+                  <th class="p-2.5 border-b">Parent Contact</th>
+                  <th class="p-2.5 border-b">SMS Dispatch</th>
+                  <th class="p-2.5 border-b text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody id="logs-table-body" class="divide-y"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="settings-tab" class="tab-content hidden space-y-6">
+        <div
+          class="bg-white p-6 rounded-2xl shadow-sm max-w-3xl mx-auto space-y-6"
+        >
+          <h2 class="text-xl font-bold text-gray-800 border-b pb-3">
+            ⚙️ SMS Gateway &amp; Message Prompt Setup
+          </h2>
+
+          <div class="space-y-4">
+            <h3
+              class="text-sm font-bold text-gray-700 uppercase tracking-wider"
+            >
+              Editable Automated Text Prompts
+            </h3>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1"
+                >TIME IN Message Template:</label
+              >
+              <textarea
+                id="template-timein"
+                rows="3"
+                class="w-full p-3 border rounded-xl font-sans text-sm focus:ring-2 focus:ring-blue-500"
+              >Dear {parent}, your child {name} (LRN: {lrn}) safely checked IN at school on {date} at {time}.</textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1"
+                >TIME OUT Message Template:</label
+              >
+              <textarea
+                id="template-timeout"
+                rows="3"
+                class="w-full p-3 border rounded-xl font-sans text-sm focus:ring-2 focus:ring-blue-500"
+              >Dear {parent}, your child {name} (LRN: {lrn}) checked OUT of school on {date} at {time}. Have a safe commute!</textarea>
+            </div>
+
+            <div
+              class="bg-slate-100 p-3 rounded-xl text-xs text-slate-600 space-y-1"
+            >
+              <strong>Available Dynamic Tags:</strong>
+              <div class="flex flex-wrap gap-2 pt-1">
+                <span class="bg-white px-2 py-0.5 border rounded font-mono"
+                  >{name}</span
+                >
+                <span class="bg-white px-2 py-0.5 border rounded font-mono"
+                  >{parent}</span
+                >
+                <span class="bg-white px-2 py-0.5 border rounded font-mono"
+                  >{lrn}</span
+                >
+                <span class="bg-white px-2 py-0.5 border rounded font-mono"
+                  >{time}</span
+                >
+                <span class="bg-white px-2 py-0.5 border rounded font-mono"
+                  >{date}</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4 border-t pt-4">
+            <h3
+              class="text-sm font-bold text-gray-700 uppercase tracking-wider"
+            >
+              SMS Dispatch Connection
+            </h3>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1"
+                >Select Gateway Mode:</label
+              >
+              <select
+                id="sms-mode"
+                onchange="toggleSmsModeUI()"
+                class="w-full p-3 border rounded-xl bg-slate-50"
+              >
+                <option value="simulation">
+                  🧪 Simulation Mode (Free - Popup Text Previews for Testing)
+                </option>
+                <option value="webhook">
+                  🌐 Webhook / API / Google Apps Script Gateway (Real SMS)
+                </option>
+              </select>
+            </div>
+
+            <div id="webhook-settings-box" class="hidden space-y-2">
+              <label class="block text-xs font-semibold text-gray-600 mb-1"
+                >Gateway Endpoint / Webhook URL:</label
+              >
+              <input
+                type="url"
+                id="sms-webhook-url"
+                placeholder="https://script.google.com/macros/s/.../exec or Semaphore API"
+                class="w-full p-3 border rounded-xl font-mono text-sm"
+              />
+              <p class="text-xs text-gray-500">
+                Paste your Google Apps Script URL or local Android SMS gateway
+                endpoint here to dispatch live texts.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onclick="saveSettings()"
+            class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700"
+          >
+            Save System Settings
+          </button>
+        </div>
+      </section>
+      </main>
+    </div>
+
+    <script>
+      let learners = (
+        JSON.parse(localStorage.getItem("sys_learners")) || [
+          {
+            lrn: "10928374001",
+            name: "Juan De La Cruz",
+            parentName: "Maria De La Cruz",
+            phone: "09171234567",
+          },
+          {
+            lrn: "10928374002",
+            name: "Maria Clara Santos",
+            parentName: "Jose Santos",
+            phone: "09189876543",
+          },
+        ]
+      ).map((learner) => ({
+        ...learner,
+        className: learner.className || "Unassigned",
+      }));
+
+      let logs = JSON.parse(localStorage.getItem("sys_attendance_logs")) || [];
+      logs = logs.map((log) => ({
+        ...log,
+        className: log.className || "Unassigned",
+      }));
+
+      let settings = JSON.parse(localStorage.getItem("sys_settings")) || {
+        mode: "simulation",
+        webhookUrl: "",
+        timeInTemplate:
+          "Dear {parent}, your child {name} (LRN: {lrn}) safely checked IN at school on {date} at {time}.",
+        timeOutTemplate:
+          "Dear {parent}, your child {name} (LRN: {lrn}) checked OUT of school on {date} at {time}. Have a safe commute!",
+      };
+
+      let currentAttendanceMode = "Time IN";
+      let html5QrcodeScanner = null;
+      let scanAlertTimeout = null;
+
+      window.addEventListener("DOMContentLoaded", () => {
+        applyTheme();
+        updateClock();
+        setInterval(updateClock, 1000);
+        document.getElementById("filter-log-date").value =
+          getLocalDateKey(new Date());
+        renderLearnersTable();
+        renderLogsTable();
+        loadSettingsUI();
+        updateBrigadeCount();
+        populateCameraDevices();
+      });
+
+      function switchTab(tabId) {
+        closeMenu();
+
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((el) => el.classList.add("hidden"));
+
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((el) => el.classList.remove("active-tab"));
+
+        document.getElementById(tabId).classList.remove("hidden");
+        document.getElementById(`btn-${tabId}`).classList.add("active-tab");
+
+        if (tabId === "scan-tab") {
+          handleSourceChange();
+        } else {
+          stopCameraStream();
+        }
+      }
+
+      function toggleMenu() {
+        const menu = document.getElementById("sidebar");
+        const backdrop = document.getElementById("sidebar-backdrop");
+        const toggle = document.getElementById("menu-toggle");
+        const isExpanded = menu.classList.contains("is-open");
+
+        menu.classList.toggle("is-open", !isExpanded);
+        backdrop.classList.toggle("is-visible", !isExpanded);
+        toggle.setAttribute("aria-expanded", String(!isExpanded));
+        toggle.setAttribute(
+          "aria-label",
+          isExpanded ? "Open section menu" : "Close section menu",
+        );
+      }
+
+      function closeMenu() {
+        document.getElementById("sidebar").classList.remove("is-open");
+        document
+          .getElementById("sidebar-backdrop")
+          .classList.remove("is-visible");
+        const toggle = document.getElementById("menu-toggle");
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.setAttribute("aria-label", "Open section menu");
+      }
+
+      function applyTheme() {
+        const isDark = localStorage.getItem("sys_theme") === "dark";
+        document.body.classList.toggle("dark-mode", isDark);
+        document
+          .getElementById("theme-toggle")
+          .setAttribute("aria-pressed", String(isDark));
+        document.getElementById("theme-toggle").innerText = isDark
+          ? "☀️ Light"
+          : "🌙 Dark";
+      }
+
+      function toggleTheme() {
+        const isDark = !document.body.classList.contains("dark-mode");
+        localStorage.setItem("sys_theme", isDark ? "dark" : "light");
+        applyTheme();
+      }
+
+      function updateClock() {
+        const now = new Date();
+        document.getElementById("system-time").innerText =
+          now.toLocaleTimeString() + " | " + now.toLocaleDateString();
+      }
+
+      function setAttendanceMode(mode) {
+        currentAttendanceMode = mode;
+        const btnIn = document.getElementById("btn-mode-in");
+        const btnOut = document.getElementById("btn-mode-out");
+
+        if (mode === "Time IN") {
+          btnIn.className =
+            "flex-1 py-3 text-lg font-bold rounded-xl border-2 border-green-600 bg-green-600 text-white shadow-md";
+          btnOut.className =
+            "flex-1 py-3 text-lg font-bold rounded-xl border-2 border-amber-500 bg-white text-amber-600 hover:bg-amber-50";
+        } else {
+          btnOut.className =
+            "flex-1 py-3 text-lg font-bold rounded-xl border-2 border-amber-500 bg-amber-500 text-white shadow-md";
+          btnIn.className =
+            "flex-1 py-3 text-lg font-bold rounded-xl border-2 border-green-600 bg-white text-green-600 hover:bg-green-50";
+        }
+      }
+
+      async function populateCameraDevices() {
+        const select = document.getElementById("camera-select");
+        try {
+          const devices = await Html5Qrcode.getCameras();
+          if (devices && devices.length > 0) {
+            devices.forEach((device) => {
+              const opt = document.createElement("option");
+              opt.value = device.id;
+              opt.innerText = `📷 Camera: ${device.label || "Camera Lens " + select.length}`;
+              select.appendChild(opt);
+            });
+          }
+        } catch (err) {
+          console.warn("Camera listing error or permission pending:", err);
+        }
+      }
+
+      function handleSourceChange() {
+        const selectedVal = document.getElementById("camera-select").value;
+        const hwBox = document.getElementById("hardware-scanner-box");
+        const camContainer = document.getElementById("camera-container");
+
+        if (selectedVal === "bluetooth") {
+          stopCameraStream();
+          camContainer.classList.add("hidden");
+          hwBox.classList.remove("hidden");
+          document.getElementById("hardware-input").focus();
+        } else {
+          hwBox.classList.add("hidden");
+          camContainer.classList.remove("hidden");
+          startCameraStream(selectedVal);
+        }
+      }
+
+      function startCameraStream(cameraId) {
+        stopCameraStream();
+        document.getElementById("camera-fallback-text").innerText =
+          "Initializing selected camera lens...";
+
+        html5QrcodeScanner = new Html5Qrcode("reader");
+        html5QrcodeScanner
+          .start(
+            cameraId,
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            (decodedText) => processAttendanceScan(decodedText.trim()),
+            (errorMessage) => {},
+          )
+          .then(() => {
+            document.getElementById("camera-fallback-text").innerText = "";
+          })
+          .catch((err) => {
+            document.getElementById("camera-fallback-text").innerText =
+              "Unable to open camera. Ensure browser permissions are allowed.";
+          });
+      }
+
+      function stopCameraStream() {
+        if (html5QrcodeScanner) {
+          html5QrcodeScanner
+            .stop()
+            .then(() => {
+              html5QrcodeScanner.clear();
+              html5QrcodeScanner = null;
+            })
+            .catch((err) => console.log(err));
+        }
+      }
+
+      function handleHardwareKeyPress(e) {
+        if (e.key === "Enter") {
+          processHardwareInput();
+        }
+      }
+
+      function processHardwareInput() {
+        const inputEl = document.getElementById("hardware-input");
+        const scannedLRN = inputEl.value.trim();
+        if (scannedLRN) {
+          processAttendanceScan(scannedLRN);
+          inputEl.value = "";
+        }
+      }
+
+      function processAttendanceScan(rawLRN) {
+        const scannedLRN = rawLRN.trim();
+        if (!scannedLRN) return;
+        playBeepSound();
+
+        const student = learners.find(
+          (l) => l.lrn.toLowerCase() === scannedLRN.toLowerCase(),
+        );
+        if (!student) {
+          showScanFeedback(
+            `Unknown learner: LRN "${scannedLRN}" is not in the learner directory.`,
+            "error",
+          );
+          return;
+        }
+
+        const now = new Date();
+        const dateKey = getLocalDateKey(now);
+        const dateStr = now.toLocaleDateString();
+        const alreadyRecorded = logs.some(
+          (log) =>
+            log.lrn.toLowerCase() === student.lrn.toLowerCase() &&
+            getLogDateKey(log) === dateKey &&
+            log.mode === currentAttendanceMode,
+        );
+        if (alreadyRecorded) {
+          showScanFeedback(
+            `${student.name} already has a ${currentAttendanceMode} record for today.`,
+            "warning",
+          );
+          return;
+        }
+
+        logs = logs.filter(
+          (log) =>
+            !(
+              log.lrn.toLowerCase() === student.lrn.toLowerCase() &&
+              getLogDateKey(log) === dateKey &&
+              log.mode === "Absent"
+            ),
+        );
+
+        const timestampStr = now.toLocaleTimeString();
+        showScanFeedback(
+          `${currentAttendanceMode} successful: ${student.name} (${student.lrn}).`,
+          "success",
+        );
+
+        const template =
+          currentAttendanceMode === "Time IN"
+            ? settings.timeInTemplate
+            : settings.timeOutTemplate;
+        const smsText = template
+          .replace(/{name}/g, student.name)
+          .replace(/{parent}/g, student.parentName)
+          .replace(/{lrn}/g, student.lrn)
+          .replace(/{time}/g, timestampStr)
+          .replace(/{date}/g, dateStr);
+
+        dispatchSMS(student.phone, smsText);
+
+        const logEntry = {
+          id: Date.now(),
+          date: dateStr,
+          dateKey,
+          timestamp: now.toISOString(),
+          time: timestampStr,
+          lrn: student.lrn,
+          name: student.name,
+          parentName: student.parentName,
+          phone: student.phone,
+          className: student.className || "Unassigned",
+          mode: currentAttendanceMode,
+          smsStatus:
+            settings.mode === "simulation" ? "Simulated" : "Dispatched",
+        };
+
+        logs.unshift(logEntry);
+        localStorage.setItem("sys_attendance_logs", JSON.stringify(logs));
+        renderLogsTable();
+        renderRecentScansUI();
+      }
+
+      function showScanFeedback(message, type) {
+        const alertBox = document.getElementById("scan-alert");
+        const styles = {
+          success: "bg-green-500 text-white",
+          warning: "bg-amber-100 text-amber-900",
+          error: "bg-red-600 text-white",
+        };
+
+        alertBox.className = `p-4 rounded-xl text-center text-lg font-bold shadow-lg ${styles[type]}`;
+        alertBox.setAttribute("role", type === "success" ? "status" : "alert");
+        alertBox.setAttribute("aria-live", "assertive");
+        alertBox.textContent = message;
+        if (scanAlertTimeout) clearTimeout(scanAlertTimeout);
+        scanAlertTimeout = setTimeout(
+          () => alertBox.classList.add("hidden"),
+          5000,
+        );
+      }
+
+      function getLocalDateKey(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      function getLogDateKey(log) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(log.dateKey || "")) {
+          return log.dateKey;
+        }
+        const parsedDate = new Date(log.date);
+        return Number.isNaN(parsedDate.getTime())
+          ? ""
+          : getLocalDateKey(parsedDate);
+      }
+
+      function getLogTimeMinutes(log) {
+        if (log.timestamp) {
+          const date = new Date(log.timestamp);
+          if (!Number.isNaN(date.getTime())) {
+            return date.getHours() * 60 + date.getMinutes();
+          }
+        }
+
+        const match = String(log.time || "").match(
+          /^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i,
+        );
+        if (!match) return null;
+
+        let hours = Number(match[1]);
+        const minutes = Number(match[2]);
+        if (match[3]) {
+          const period = match[3].toUpperCase();
+          if (hours === 12) hours = 0;
+          if (period === "PM") hours += 12;
+        }
+        return hours * 60 + minutes;
+      }
+
+      function escapeHTML(value) {
+        return String(value).replace(/[&<>"']/g, (character) => {
+          const entities = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          };
+          return entities[character];
+        });
+      }
+
+      function playBeepSound() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(800, ctx.currentTime);
+          osc.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.15);
+        } catch (e) {}
+      }
+
+      function dispatchSMS(phone, message) {
+        if (settings.mode === "simulation") {
+          alert(`📱 [SIMULATION SMS SENT]\nTo: ${phone}\nText: "${message}"`);
+        } else if (settings.mode === "webhook" && settings.webhookUrl) {
+          fetch(settings.webhookUrl, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone: phone, message: message }),
+          }).catch((err) => console.error("Webhook SMS Error:", err));
+        }
+      }
+
+      function renderRecentScansUI() {
+        const listEl = document.getElementById("recent-scans-list");
+        const todayKey = getLocalDateKey(new Date());
+        const todayLogs = logs
+          .filter(
+            (log) =>
+              getLogDateKey(log) === todayKey && log.mode !== "Absent",
+          )
+          .slice(0, 6);
+
+        if (todayLogs.length === 0) {
+          listEl.innerHTML =
+            '<p class="text-gray-400 text-center py-6">No scans recorded today yet.</p>';
+          return;
+        }
+
+        listEl.innerHTML = todayLogs
+          .map(
+            (l) => `
+                <div class="p-3 rounded-xl border flex justify-between items-center ${l.mode === "Time IN" ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200"}">
+                    <div>
+                        <p class="font-bold text-gray-800">${l.name}</p>
+                        <p class="text-xs text-gray-500">${l.lrn} | ${l.time}</p>
+                    </div>
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-full ${l.mode === "Time IN" ? "bg-green-600 text-white" : "bg-amber-600 text-white"}">${l.mode}</span>
+                </div>
+            `,
+          )
+          .join("");
+      }
+
+      function saveLearner(e) {
+        e.preventDefault();
+        const lrn = document.getElementById("form-lrn").value.trim();
+        const name = document.getElementById("form-name").value.trim();
+        const parentName = document.getElementById("form-parent").value.trim();
+        const phone = document.getElementById("form-phone").value.trim();
+        const className =
+          document.getElementById("form-class").value.trim() || "Unassigned";
+        const originalLrn = document.getElementById("edit-original-lrn").value;
+
+        if (originalLrn) {
+          const idx = learners.findIndex((l) => l.lrn === originalLrn);
+          if (idx !== -1) {
+            learners[idx] = { lrn, name, parentName, phone, className };
+          }
+        } else {
+          if (learners.some((l) => l.lrn === lrn)) {
+            alert("A learner with this LRN already exists!");
+            return;
+          }
+          learners.push({ lrn, name, parentName, phone, className });
+        }
+
+        localStorage.setItem("sys_learners", JSON.stringify(learners));
+        resetLearnerForm();
+        renderLearnersTable();
+        renderLogsTable();
+        updateBrigadeCount();
+        alert("Learner saved successfully!");
+      }
+
+      function editLearner(lrn) {
+        const student = learners.find((l) => l.lrn === lrn);
+        if (!student) return;
+
+        document.getElementById("edit-original-lrn").value = student.lrn;
+        document.getElementById("form-lrn").value = student.lrn;
+        document.getElementById("form-name").value = student.name;
+        document.getElementById("form-parent").value = student.parentName;
+        document.getElementById("form-phone").value = student.phone;
+        document.getElementById("form-class").value =
+          student.className === "Unassigned" ? "" : student.className;
+
+        document.getElementById("form-title").innerText =
+          "✏️ Edit Learner Details";
+        document.getElementById("btn-save-learner").innerText =
+          "Update Learner";
+      }
+
+      function deleteLearner(lrn) {
+        if (confirm(`Are you sure you want to delete learner LRN: ${lrn}?`)) {
+          learners = learners.filter((l) => l.lrn !== lrn);
+          localStorage.setItem("sys_learners", JSON.stringify(learners));
+          renderLearnersTable();
+          renderLogsTable();
+          updateBrigadeCount();
+        }
+      }
+
+      function resetLearnerForm() {
+        document.getElementById("learner-form").reset();
+        document.getElementById("edit-original-lrn").value = "";
+        document.getElementById("form-title").innerText = "➕ Add New Learner";
+        document.getElementById("btn-save-learner").innerText = "Save Learner";
+      }
+
+      function renderLearnersTable() {
+        const tbody = document.getElementById("learners-table-body");
+        const query = document
+          .getElementById("search-learner")
+          .value.toLowerCase();
+        const filtered = learners.filter(
+          (l) =>
+            l.name.toLowerCase().includes(query) ||
+            l.lrn.toLowerCase().includes(query) ||
+            l.parentName.toLowerCase().includes(query) ||
+            (l.className || "Unassigned").toLowerCase().includes(query),
+        );
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">No matching learners found.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = filtered
+          .map(
+            (l) => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-2.5 font-mono font-bold">${l.lrn}</td>
+                    <td class="p-2.5">${l.name}</td>
+                    <td class="p-2.5">${l.parentName}</td>
+                    <td class="p-2.5 font-mono">${l.phone}</td>
+                    <td class="p-2.5">${escapeHTML(l.className || "Unassigned")}</td>
+                    <td class="p-2.5 text-center space-x-1">
+                        <button onclick="editLearner('${l.lrn}')" class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-bold hover:bg-amber-200">Edit</button>
+                        <button onclick="deleteLearner('${l.lrn}')" class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold hover:bg-red-200">Delete</button>
+                    </td>
+                </tr>
+            `,
+          )
+          .join("");
+      }
+
+      function exportLearnersCSV() {
+        let csv = "LRN,Full Name,Parent Name,Phone Number,Class / Section\n";
+        learners.forEach((l) => {
+          csv += `"${l.lrn}","${l.name}","${l.parentName}","${l.phone}","${l.className || "Unassigned"}"\n`;
+        });
+        downloadCSV(
+          csv,
+          `Learner_Directory_${new Date().toISOString().slice(0, 10)}.csv`,
+        );
+      }
+
+      function importLearnersCSV(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (evt) {
+          const lines = evt.target.result.split("\n").slice(1);
+          let count = 0;
+          lines.forEach((line) => {
+            const cols = line.split(",").map((c) => c.replace(/"/g, "").trim());
+            if (cols.length >= 4 && cols[0]) {
+              if (!learners.some((l) => l.lrn === cols[0])) {
+                learners.push({
+                  lrn: cols[0],
+                  name: cols[1],
+                  parentName: cols[2],
+                  phone: cols[3],
+                  className: cols[4] || "Unassigned",
+                });
+                count++;
+              }
+            }
+          });
+          localStorage.setItem("sys_learners", JSON.stringify(learners));
+          renderLearnersTable();
+          renderLogsTable();
+          updateBrigadeCount();
+          alert(`Successfully imported ${count} new learners!`);
+        };
+        reader.readAsText(file);
+      }
+
+      function updateBrigadeCount() {
+        document.getElementById("brigade-recipient-count").innerText =
+          learners.length;
+      }
+
+      async function triggerTextBrigade() {
+        const msg = document.getElementById("brigade-message").value.trim();
+        if (!msg) {
+          alert("Please type a broadcast message first!");
+          return;
+        }
+        if (learners.length === 0) {
+          alert("No learners registered in directory to send texts to!");
+          return;
+        }
+
+        if (
+          !confirm(
+            `Are you sure you want to send this broadcast to ALL ${learners.length} registered parent numbers?`,
+          )
+        )
+          return;
+
+        const progressContainer = document.getElementById(
+          "brigade-progress-container",
+        );
+        const progressBar = document.getElementById("brigade-progress-bar");
+        const progressText = document.getElementById("brigade-progress-text");
+
+        progressContainer.classList.remove("hidden");
+
+        for (let i = 0; i < learners.length; i++) {
+          const student = learners[i];
+          dispatchSMS(student.phone, msg);
+
+          const pct = Math.round(((i + 1) / learners.length) * 100);
+          progressBar.style.width = pct + "%";
+          progressText.innerText = `${i + 1} / ${learners.length}`;
+
+          await new Promise((r) => setTimeout(r, 200));
+        }
+
+        alert("Emergency Text Brigade Broadcast Complete!");
+        setTimeout(() => progressContainer.classList.add("hidden"), 3000);
+      }
+
+      function renderLogsTable() {
+        const tbody = document.getElementById("logs-table-body");
+        const query = document
+          .getElementById("search-logs")
+          .value.toLowerCase();
+        const selectedDate = document.getElementById("filter-log-date").value;
+        const classFilter = document.getElementById("filter-log-class");
+        const selectedClass = classFilter.value;
+        const classNames = [
+          ...new Set(
+            [...learners, ...logs]
+              .map((entry) => entry.className || "Unassigned")
+              .filter(Boolean),
+          ),
+        ].sort((a, b) => a.localeCompare(b));
+        classFilter.innerHTML =
+          '<option value="">All classes</option>' +
+          classNames
+            .map(
+              (className) =>
+                `<option value="${escapeHTML(className)}">${escapeHTML(className)}</option>`,
+            )
+            .join("");
+        if (classNames.includes(selectedClass)) {
+          classFilter.value = selectedClass;
+        }
+
+        const reportDate = selectedDate || getLocalDateKey(new Date());
+        const reportLearners = learners
+          .filter(
+            (learner) =>
+              !selectedClass ||
+              (learner.className || "Unassigned") === selectedClass,
+          )
+          .sort((a, b) => a.name.localeCompare(b.name));
+        const absenceSelect = document.getElementById("absence-learner");
+        const previousLearner = absenceSelect.value;
+        absenceSelect.innerHTML =
+          '<option value="">Select a learner</option>' +
+          reportLearners
+            .map(
+              (learner) =>
+                `<option value="${escapeHTML(learner.lrn)}">${escapeHTML(learner.name)} — ${escapeHTML(learner.className || "Unassigned")}</option>`,
+            )
+            .join("");
+        if (reportLearners.some((learner) => learner.lrn === previousLearner)) {
+          absenceSelect.value = previousLearner;
+        }
+        renderAttendanceSummary(reportDate, selectedClass, reportLearners);
+
+        const filtered = logs.filter((log) => {
+          const matchesQuery =
+            String(log.name || "").toLowerCase().includes(query) ||
+            String(log.lrn || "").toLowerCase().includes(query) ||
+            String(log.date || "").toLowerCase().includes(query) ||
+            String(log.mode || "").toLowerCase().includes(query) ||
+            String(log.className || "Unassigned").toLowerCase().includes(query);
+          const matchesDate =
+            !selectedDate || getLogDateKey(log) === selectedDate;
+          const matchesClass =
+            !selectedClass ||
+            (log.className || "Unassigned") === selectedClass;
+          return matchesQuery && matchesDate && matchesClass;
+        });
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-gray-400">No attendance logs match these filters.</td></tr>`;
+          renderRecentScansUI();
+          return;
+        }
+
+        tbody.innerHTML = filtered
+          .map(
+            (l) => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-2.5 font-mono text-xs">${l.date} ${l.time}</td>
+                    <td class="p-2.5 font-mono font-bold">${l.lrn}</td>
+                    <td class="p-2.5">${l.name}</td>
+                    <td class="p-2.5">${escapeHTML(l.className || "Unassigned")}</td>
+                    <td class="p-2.5"><span class="px-2 py-0.5 text-xs rounded font-bold ${l.mode === "Time IN" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}">${l.mode}</span></td>
+                    <td class="p-2.5 font-mono text-xs">${l.phone}</td>
+                    <td class="p-2.5 text-xs text-gray-500">${l.smsStatus}</td>
+                    <td class="p-2.5 text-center">
+                        <button onclick="deleteLog(${l.id})" class="text-red-600 hover:text-red-800 text-xs font-bold">Delete</button>
+                    </td>
+                </tr>
+            `,
+          )
+          .join("");
+
+        renderRecentScansUI();
+      }
+
+      function renderAttendanceSummary(reportDate, selectedClass, roster) {
+        const rosterIds = new Set(roster.map((learner) => learner.lrn));
+        const dateLogs = logs.filter(
+          (log) =>
+            getLogDateKey(log) === reportDate &&
+            rosterIds.has(log.lrn),
+        );
+        const learnersWithCheckIn = new Set(
+          dateLogs
+            .filter((log) => log.mode === "Time IN")
+            .map((log) => log.lrn),
+        );
+        const learnersWithCheckOut = new Set(
+          dateLogs
+            .filter((log) => log.mode === "Time OUT")
+            .map((log) => log.lrn),
+        );
+        const cutoffValue = document.getElementById("late-cutoff").value;
+        const cutoffMatch = cutoffValue.match(/^(\d{2}):(\d{2})$/);
+        const lateCutoffMinutes = cutoffMatch
+          ? Number(cutoffMatch[1]) * 60 + Number(cutoffMatch[2])
+          : 8 * 60;
+        const lateLearners = new Set(
+          dateLogs
+            .filter(
+              (log) =>
+                log.mode === "Time IN" &&
+                getLogTimeMinutes(log) > lateCutoffMinutes,
+            )
+            .map((log) => log.lrn),
+        );
+
+        document.getElementById("report-present").innerText =
+          learnersWithCheckIn.size;
+        document.getElementById("report-absent").innerText = Math.max(
+          0,
+          roster.length - learnersWithCheckIn.size,
+        );
+        document.getElementById("report-late").innerText = lateLearners.size;
+        document.getElementById("report-checked-out").innerText =
+          learnersWithCheckOut.size;
+
+        const readableDate = new Date(`${reportDate}T00:00:00`).toLocaleDateString();
+        document.getElementById("report-scope").innerText =
+          `Daily summary for ${readableDate} · ${selectedClass || "All classes"} · Late after ${cutoffValue || "08:00"}`;
+      }
+
+      function markLearnerAbsent() {
+        const learnerId = document.getElementById("absence-learner").value;
+        const reportDate = document.getElementById("filter-log-date").value;
+        if (!learnerId) {
+          alert("Select a learner to mark absent.");
+          return;
+        }
+        if (!reportDate) {
+          alert("Select the date for this absence.");
+          return;
+        }
+
+        const learner = learners.find((entry) => entry.lrn === learnerId);
+        if (!learner) {
+          alert("The selected learner is no longer in the directory.");
+          return;
+        }
+
+        const existingRecord = logs.find(
+          (log) =>
+            log.lrn === learner.lrn &&
+            getLogDateKey(log) === reportDate &&
+            (log.mode === "Time IN" ||
+              log.mode === "Time OUT" ||
+              log.mode === "Absent"),
+        );
+        if (existingRecord) {
+          const status =
+            existingRecord.mode === "Absent"
+              ? "already marked absent"
+              : `already has a ${existingRecord.mode} record`;
+          alert(`${learner.name} ${status} for this date.`);
+          return;
+        }
+
+        if (
+          !confirm(
+            `Mark ${learner.name} absent on ${new Date(`${reportDate}T00:00:00`).toLocaleDateString()}?`,
+          )
+        ) {
+          return;
+        }
+
+        logs.unshift({
+          id: Date.now() + Math.floor(Math.random() * 1000),
+          date: new Date(`${reportDate}T00:00:00`).toLocaleDateString(),
+          dateKey: reportDate,
+          timestamp: `${reportDate}T00:00:00`,
+          time: "—",
+          lrn: learner.lrn,
+          name: learner.name,
+          parentName: learner.parentName,
+          phone: learner.phone,
+          className: learner.className || "Unassigned",
+          mode: "Absent",
+          smsStatus: "Not sent",
+        });
+        localStorage.setItem("sys_attendance_logs", JSON.stringify(logs));
+        renderLogsTable();
+        alert(`${learner.name} was marked absent.`);
+      }
+
+      function deleteLog(id) {
+        logs = logs.filter((l) => l.id !== id);
+        localStorage.setItem("sys_attendance_logs", JSON.stringify(logs));
+        renderLogsTable();
+      }
+
+      function clearAllLogs() {
+        if (
+          confirm(
+            "Are you sure you want to permanently clear all attendance logs history?",
+          )
+        ) {
+          logs = [];
+          localStorage.setItem("sys_attendance_logs", JSON.stringify(logs));
+          renderLogsTable();
+        }
+      }
+
+      function exportLogsCSV() {
+        const reportDate = document.getElementById("filter-log-date").value;
+        if (!reportDate) {
+          alert("Select a report date before exporting.");
+          return;
+        }
+        const selectedClass = document.getElementById("filter-log-class").value;
+        const reportLearners = learners
+          .filter(
+            (learner) =>
+              !selectedClass ||
+              (learner.className || "Unassigned") === selectedClass,
+          )
+          .sort((a, b) => a.name.localeCompare(b.name));
+        if (reportLearners.length === 0) {
+          alert("There are no learners in the selected class to export.");
+          return;
+        }
+
+        const cutoffMatch = document
+          .getElementById("late-cutoff")
+          .value.match(/^(\d{2}):(\d{2})$/);
+        const lateCutoffMinutes = cutoffMatch
+          ? Number(cutoffMatch[1]) * 60 + Number(cutoffMatch[2])
+          : 8 * 60;
+        const csvRows = [
+          [
+            "Date",
+            "Class / Section",
+            "LRN",
+            "Learner Name",
+            "Status",
+            "Time IN",
+            "Time OUT",
+            "Manually Marked Absent",
+            "Parent Name",
+            "Phone",
+            "SMS Status",
+          ],
+        ];
+
+        for (const learner of reportLearners) {
+          const learnerLogs = logs.filter(
+            (log) =>
+              log.lrn === learner.lrn &&
+              getLogDateKey(log) === reportDate,
+          );
+          const timeIn = learnerLogs.find((log) => log.mode === "Time IN");
+          const timeOut = learnerLogs.find((log) => log.mode === "Time OUT");
+          const manualAbsence = learnerLogs.some(
+            (log) => log.mode === "Absent",
+          );
+          const isLate =
+            timeIn && getLogTimeMinutes(timeIn) > lateCutoffMinutes;
+          const status = timeIn
+            ? isLate
+              ? "Late"
+              : "Present"
+            : manualAbsence
+              ? "Absent (marked)"
+              : "Absent (no check-in)";
+          const smsLog = timeIn || timeOut;
+          csvRows.push([
+            reportDate,
+            learner.className || "Unassigned",
+            learner.lrn,
+            learner.name,
+            status,
+            timeIn?.time || "",
+            timeOut?.time || "",
+            manualAbsence ? "Yes" : "No",
+            learner.parentName,
+            learner.phone,
+            smsLog?.smsStatus || "Not sent",
+          ]);
+        }
+
+        const csv = csvRows
+          .map((row) => row.map(escapeCSVField).join(","))
+          .join("\r\n");
+        const safeClassName = selectedClass
+          ? `_${selectedClass.replace(/[^a-z0-9_-]+/gi, "_")}`
+          : "_All_Classes";
+        downloadCSV(
+          `${csv}\r\n`,
+          `Attendance_Report_${reportDate}${safeClassName}.csv`,
+        );
+      }
+
+      function escapeCSVField(value) {
+        return `"${String(value ?? "").replace(/"/g, '""')}"`;
+      }
+
+      function loadSettingsUI() {
+        document.getElementById("template-timein").value =
+          settings.timeInTemplate;
+        document.getElementById("template-timeout").value =
+          settings.timeOutTemplate;
+        document.getElementById("sms-mode").value = settings.mode;
+        document.getElementById("sms-webhook-url").value =
+          settings.webhookUrl || "";
+        toggleSmsModeUI();
+      }
+
+      function toggleSmsModeUI() {
+        const mode = document.getElementById("sms-mode").value;
+        const box = document.getElementById("webhook-settings-box");
+        if (mode === "webhook") box.classList.remove("hidden");
+        else box.classList.add("hidden");
+      }
+
+      function saveSettings() {
+        settings.timeInTemplate = document
+          .getElementById("template-timein")
+          .value.trim();
+        settings.timeOutTemplate = document
+          .getElementById("template-timeout")
+          .value.trim();
+        settings.mode = document.getElementById("sms-mode").value;
+        settings.webhookUrl = document
+          .getElementById("sms-webhook-url")
+          .value.trim();
+
+        localStorage.setItem("sys_settings", JSON.stringify(settings));
+        alert("Settings saved successfully!");
+      }
+
+      function downloadCSV(csvContent, filename) {
+        const blob = new Blob([csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    </script>
+  </body>
+</html>
