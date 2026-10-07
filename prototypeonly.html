@@ -1136,6 +1136,12 @@
                 >
                   Export CSV
                 </button>
+                <button
+                  onclick="printAllLearnerQRCards()"
+                  class="bg-blue-600 text-white text-xs px-3 py-2 rounded-lg font-bold hover:bg-blue-700"
+                >
+                  Print QR Cards
+                </button>
                 <label
                   class="bg-slate-700 text-white text-xs px-3 py-2 rounded-lg font-bold hover:bg-slate-800 cursor-pointer"
                 >
@@ -1201,8 +1207,12 @@
               <p class="mt-1"><span class="font-semibold text-slate-700">Parent/Guardian:</span> <span id="qr-parent-name"></span></p>
               <p class="mt-1"><span class="font-semibold text-slate-700">Grade / Section:</span> <span id="qr-class-name"></span></p>
               <p class="mt-1"><span class="font-semibold text-slate-700">LRN:</span> <span id="qr-lrn" class="font-mono"></span></p>
+              <p class="mt-1"><span class="font-semibold text-slate-700">QR version:</span> <span id="qr-version" class="font-mono"></span></p>
             </div>
-            <button type="button" onclick="downloadQrCode()" class="mt-5 w-full rounded-xl bg-blue-600 px-4 py-3 font-bold text-white hover:bg-blue-700">Download QR Code</button>
+            <div class="mt-5 grid w-full grid-cols-2 gap-2">
+              <button type="button" onclick="downloadQrCode()" class="rounded-xl bg-blue-600 px-4 py-3 font-bold text-white hover:bg-blue-700">Download QR</button>
+              <button type="button" onclick="regenerateCurrentQr()" class="rounded-xl bg-amber-500 px-4 py-3 font-bold text-white hover:bg-amber-600">Regenerate QR</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1537,6 +1547,7 @@
       ).map((learner) => ({
         ...learner,
         className: learner.className || "Unassigned",
+        qrVersion: Number(learner.qrVersion) || 1,
       }));
 
       let logs = JSON.parse(localStorage.getItem("sys_attendance_logs")) || [];
@@ -1853,7 +1864,8 @@
 
       function processAttendanceScan(rawLRN) {
         if (!accessMode) return;
-        const scannedLRN = getLrnFromQrPayload(rawLRN);
+        const qrPayload = parseQrPayload(rawLRN);
+        const scannedLRN = qrPayload.lrn;
         if (!scannedLRN) return;
         playBeepSound();
 
@@ -1863,6 +1875,13 @@
         if (!student) {
           showScanFeedback(
             `Unknown learner: LRN "${scannedLRN}" is not in the learner directory.`,
+            "error",
+          );
+          return;
+        }
+        if (qrPayload.version && qrPayload.version !== (student.qrVersion || 1)) {
+          showScanFeedback(
+            "This QR code has been replaced. Generate a new QR code for this learner.",
             "error",
           );
           return;
@@ -1935,14 +1954,17 @@
         renderRecentScansUI();
       }
 
-      function getLrnFromQrPayload(rawValue) {
+      function parseQrPayload(rawValue) {
         const value = String(rawValue || "").trim();
-        if (!value) return "";
+        if (!value) return { lrn: "", version: null };
         try {
           const payload = JSON.parse(value);
-          return String(payload.lrn || "").trim();
+          return {
+            lrn: String(payload.lrn || "").trim(),
+            version: Number(payload.version) || null,
+          };
         } catch (_) {
-          return value;
+          return { lrn: value, version: null };
         }
       }
 
@@ -1956,6 +1978,7 @@
           name: learner.name,
           parentName: learner.parentName,
           className: learner.className || "Unassigned",
+          version: learner.qrVersion || 1,
         });
         const output = document.getElementById("qr-code-output");
         output.replaceChildren();
@@ -1972,7 +1995,19 @@
         document.getElementById("qr-parent-name").textContent = learner.parentName;
         document.getElementById("qr-class-name").textContent = learner.className || "Unassigned";
         document.getElementById("qr-lrn").textContent = learner.lrn;
+        document.getElementById("qr-version").textContent = learner.qrVersion || 1;
+        document.getElementById("qr-modal").dataset.lrn = learner.lrn;
         document.getElementById("qr-modal").classList.remove("hidden");
+      }
+
+      function regenerateCurrentQr() {
+        const lrn = document.getElementById("qr-modal").dataset.lrn;
+        const learner = learners.find((item) => item.lrn === lrn);
+        if (!learner || !confirm("Regenerate this QR code? The previous QR code will stop working.")) return;
+        learner.qrVersion = (learner.qrVersion || 1) + 1;
+        localStorage.setItem("sys_learners", JSON.stringify(learners));
+        showLearnerQR(learner.lrn);
+        showToast("QR code regenerated. The previous code is now revoked.", "success");
       }
 
       function closeQrModal() {
@@ -1992,6 +2027,62 @@
         document.body.appendChild(link);
         link.click();
         link.remove();
+      }
+
+      function printAllLearnerQRCards() {
+        if (!requireAdmin()) return;
+        if (!learners.length) {
+          showToast("Add at least one learner before printing QR cards.", "warning");
+          return;
+        }
+        const printWindow = window.open("", "_blank", "width=1000,height=800");
+        if (!printWindow) {
+          showToast("Allow pop-ups to print QR cards.", "error");
+          return;
+        }
+        const scratch = document.createElement("div");
+        scratch.style.cssText = "position:fixed;left:-10000px;top:-10000px";
+        document.body.appendChild(scratch);
+        const cards = learners.map((learner) => {
+          scratch.replaceChildren();
+          const payload = JSON.stringify({
+            lrn: learner.lrn,
+            name: learner.name,
+            parentName: learner.parentName,
+            className: learner.className || "Unassigned",
+            version: learner.qrVersion || 1,
+          });
+          new QRCode(scratch, {
+            text: payload,
+            width: 180,
+            height: 180,
+            colorDark: "#0f172a",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M,
+          });
+          const image = scratch.querySelector("img");
+          const canvas = scratch.querySelector("canvas");
+          const dataUrl = image?.src || canvas?.toDataURL("image/png") || "";
+          return {
+            image: dataUrl,
+            name: learner.name,
+            parentName: learner.parentName,
+            className: learner.className || "Unassigned",
+            lrn: learner.lrn,
+          };
+        });
+        scratch.remove();
+        printWindow.document.write(`<!doctype html><html><head><title>Learner QR Cards</title><style>
+          *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:16px;color:#0f172a}
+          .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{border:2px solid #cbd5e1;border-radius:12px;padding:14px;text-align:center;break-inside:avoid}
+          img{width:180px;height:180px}.school{font-size:12px;color:#475569;margin-bottom:6px}.name{font-size:17px;font-weight:700;margin-top:8px}.meta{font-size:12px;margin-top:4px;color:#334155}
+          @media print{body{padding:0}.grid{gap:10px}.card{border:1px solid #94a3b8}}
+        </style></head><body><div class="grid">${cards
+          .map(
+            (card) => `<article class="card"><div class="school">Learner Attendance System</div><img src="${card.image}" alt="QR code for ${escapeHTML(card.name)}"><div class="name">${escapeHTML(card.name)}</div><div class="meta">${escapeHTML(card.className)}</div><div class="meta">LRN: ${escapeHTML(card.lrn)}</div><div class="meta">Parent: ${escapeHTML(card.parentName)}</div></article>`,
+          )
+          .join("")}</div><script>window.onload=()=>setTimeout(()=>window.print(),250);<\/script></body></html>`);
+        printWindow.document.close();
       }
 
       function showScanFeedback(message, type) {
@@ -2136,14 +2227,21 @@
         if (originalLrn) {
           const idx = learners.findIndex((l) => l.lrn === originalLrn);
           if (idx !== -1) {
-            learners[idx] = { lrn, name, parentName, phone, className };
+            learners[idx] = {
+              lrn,
+              name,
+              parentName,
+              phone,
+              className,
+              qrVersion: (learners[idx].qrVersion || 1) + 1,
+            };
           }
         } else {
           if (learners.some((l) => l.lrn === lrn)) {
             showToast("A learner with this LRN already exists.", "error");
             return;
           }
-          learners.push({ lrn, name, parentName, phone, className });
+          learners.push({ lrn, name, parentName, phone, className, qrVersion: 1 });
         }
 
         localStorage.setItem("sys_learners", JSON.stringify(learners));
@@ -2263,6 +2361,7 @@
                   parentName: cols[2],
                   phone: cols[3],
                   className: cols[4] || "Unassigned",
+                  qrVersion: 1,
                 });
                 count++;
               }
