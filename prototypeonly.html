@@ -737,6 +737,38 @@
         object-fit: cover !important;
         border-radius: 0.75rem;
       }
+      #toast-region {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 100;
+        display: grid;
+        gap: 0.65rem;
+        width: min(22rem, calc(100vw - 2rem));
+        pointer-events: none;
+      }
+      .app-toast {
+        pointer-events: auto;
+        border: 1px solid rgb(255 255 255 / 0.25);
+        border-radius: 0.85rem;
+        padding: 0.8rem 1rem;
+        color: #fff;
+        box-shadow: 0 12px 30px rgb(15 23 42 / 0.22);
+        animation: toast-in 180ms ease-out;
+      }
+      .app-toast.info { background: #38566b; }
+      .app-toast.success { background: #28745b; }
+      .app-toast.error { background: #a65f62; }
+      .app-toast.warning { background: #9a7543; }
+      @keyframes toast-in {
+        from { opacity: 0; transform: translateY(0.5rem); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @media (max-width: 640px) {
+        #toast-region { right: 0.75rem; bottom: 0.75rem; width: calc(100vw - 1.5rem); }
+        .overflow-x-auto { -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+        .overflow-x-auto table { min-width: 680px; }
+      }
     </style>
   </head>
   <body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
@@ -812,6 +844,8 @@
         </div>
       </div>
     </section>
+
+    <div id="toast-region" aria-live="polite" aria-atomic="true"></div>
 
     <div id="app-layout" class="hidden">
       <nav id="sidebar" aria-label="Main navigation">
@@ -1070,6 +1104,7 @@
                 <button
                   type="submit"
                   id="btn-save-learner"
+                  aria-label="Save learner record"
                   class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700"
                 >
                   Save Learner
@@ -1119,6 +1154,7 @@
               type="text"
               id="search-learner"
               onkeyup="renderLearnersTable()"
+              aria-label="Search learner directory"
               placeholder="🔍 Search by Name, LRN, or Parent..."
               class="w-full p-2.5 border rounded-lg text-sm mb-2"
             />
@@ -1232,7 +1268,10 @@
 
           <div class="pt-2">
             <button
+              id="btn-trigger-brigade"
               onclick="triggerTextBrigade()"
+              type="button"
+              aria-label="Send emergency text broadcast"
               class="w-full bg-red-600 text-white py-4 rounded-xl text-lg font-bold hover:bg-red-700 shadow-lg flex items-center justify-center gap-2"
             >
               <span>🚀</span> DISPATCH EMERGENCY TEXT BRIGADE
@@ -1270,6 +1309,7 @@
               type="text"
               id="search-logs"
               oninput="renderLogsTable()"
+              aria-label="Search attendance logs"
               placeholder="🔍 Search learner, LRN, or mode..."
               class="w-full p-2.5 border rounded-lg text-sm"
             />
@@ -1517,7 +1557,20 @@
       let currentAttendanceMode = "Time IN";
       let html5QrcodeScanner = null;
       let scanAlertTimeout = null;
+      let toastId = 0;
       let accessMode = null;
+
+      function showToast(message, type = "info", duration = 3500) {
+        const region = document.getElementById("toast-region");
+        if (!region) return;
+        const toast = document.createElement("div");
+        toast.className = `app-toast ${type}`;
+        toast.setAttribute("role", type === "error" ? "alert" : "status");
+        toast.dataset.toastId = String(++toastId);
+        toast.textContent = message;
+        region.appendChild(toast);
+        window.setTimeout(() => toast.remove(), duration);
+      }
 
       function initializeGoogleSignIn() {
         if (!window.google?.accounts?.id) {
@@ -2027,7 +2080,7 @@
 
       function dispatchSMS(phone, message) {
         if (settings.mode === "simulation") {
-          alert(`📱 [SIMULATION SMS SENT]\nTo: ${phone}\nText: "${message}"`);
+          showToast(`Simulation SMS sent to ${phone}.`, "success");
         } else if (settings.mode === "webhook" && settings.webhookUrl) {
           fetch(settings.webhookUrl, {
             method: "POST",
@@ -2087,7 +2140,7 @@
           }
         } else {
           if (learners.some((l) => l.lrn === lrn)) {
-            alert("A learner with this LRN already exists!");
+            showToast("A learner with this LRN already exists.", "error");
             return;
           }
           learners.push({ lrn, name, parentName, phone, className });
@@ -2098,7 +2151,7 @@
         renderLearnersTable();
         renderLogsTable();
         updateBrigadeCount();
-        alert("Learner saved successfully!");
+        showToast("Learner saved successfully.", "success");
       }
 
       function editLearner(lrn) {
@@ -2219,7 +2272,7 @@
           renderLearnersTable();
           renderLogsTable();
           updateBrigadeCount();
-          alert(`Successfully imported ${count} new learners!`);
+          showToast(`Imported ${count} new learner${count === 1 ? "" : "s"}.`, "success");
         };
         reader.readAsText(file);
       }
@@ -2233,11 +2286,11 @@
         if (!requireAdmin()) return;
         const msg = document.getElementById("brigade-message").value.trim();
         if (!msg) {
-          alert("Please type a broadcast message first!");
+          showToast("Type a broadcast message first.", "warning");
           return;
         }
         if (learners.length === 0) {
-          alert("No learners registered in directory to send texts to!");
+          showToast("There are no learners registered yet.", "warning");
           return;
         }
 
@@ -2253,8 +2306,12 @@
         );
         const progressBar = document.getElementById("brigade-progress-bar");
         const progressText = document.getElementById("brigade-progress-text");
+        const broadcastButton = document.getElementById("btn-trigger-brigade");
 
         progressContainer.classList.remove("hidden");
+        broadcastButton.disabled = true;
+        broadcastButton.setAttribute("aria-busy", "true");
+        broadcastButton.textContent = "Sending messages…";
 
         for (let i = 0; i < learners.length; i++) {
           const student = learners[i];
@@ -2267,7 +2324,10 @@
           await new Promise((r) => setTimeout(r, 200));
         }
 
-        alert("Emergency Text Brigade Broadcast Complete!");
+        showToast("Broadcast completed successfully.", "success");
+        broadcastButton.disabled = false;
+        broadcastButton.removeAttribute("aria-busy");
+        broadcastButton.textContent = "Send Broadcast";
         setTimeout(() => progressContainer.classList.add("hidden"), 3000);
       }
 
@@ -2620,7 +2680,7 @@
           .value.trim();
 
         localStorage.setItem("sys_settings", JSON.stringify(settings));
-        alert("Settings saved successfully!");
+        showToast("Settings saved successfully.", "success");
       }
 
       function downloadCSV(csvContent, filename) {
